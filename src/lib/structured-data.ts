@@ -1,6 +1,7 @@
 import { absoluteUrl, siteConfig } from "@/lib/site"
 import type { PostData } from "@/lib/posts"
 import type { DefinitionEntry, FaqItem } from "@/lib/definitions"
+import { defaultAuthor } from "@/lib/author"
 
 export const organizationJsonLd = {
   "@context": "https://schema.org",
@@ -178,10 +179,18 @@ export function articleJsonLd(post: PostData) {
     mainEntityOfPage: absoluteUrl(canonicalPath),
     url: absoluteUrl(canonicalPath),
     author: {
-      "@id": `${siteConfig.url}/#organization`,
+      "@type": "Organization",
+      "@id": `${siteConfig.url}/#editorial-team`,
+      name: defaultAuthor.name,
+      description: defaultAuthor.bio,
+      url: siteConfig.url,
     },
     publisher: {
+      "@type": "EducationalOrganization",
       "@id": `${siteConfig.url}/#organization`,
+      name: siteConfig.name,
+      url: siteConfig.url,
+      logo: absoluteUrl("/icon.svg"),
     },
     image: absoluteUrl(post.image || siteConfig.ogImage),
     inLanguage: siteConfig.language,
