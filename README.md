@@ -43,6 +43,8 @@ description: "검색 결과와 목록에 표시될 설명"
 
 빌드 시 `src/lib/posts.ts`가 frontmatter를 검증하고, `/blog/[slug]/` 정적 페이지와 sitemap 항목을 생성합니다.
 
+상세한 글 작성 원칙, Frontmatter 스펙, 이미지 규격, 교육학적 가이드라인은 [블로그 작성 가이드](docs/BLOG_POSTING_GUIDE.md)를 참고하세요.
+
 ## Counseling API
 
 상담 위젯은 브라우저에서 외부 API를 직접 호출합니다.
@@ -70,9 +72,25 @@ API base URL 우선순위:
 - RSS: `src/app/rss.xml/route.ts`
 - Google AdSense/GTM: `src/app/layout.tsx`
 
+## Git & Branch Strategy
+
+> **중요 (Branch Protection):** 이 레포지토리는 `main` 브랜치에 직접 푸시(Direct Push)하는 것이 차단되어 있습니다.  
+> 기능 개발, 버그 수정, 블로그 포스팅, 문서 수정을 포함한 **모든 작업은 반드시 별도 브랜치를 생성하여 작업하고 Pull Request(PR)를 통해 병합**해야 합니다.
+
+1. **작업 브랜치 생성**: `git checkout main && git pull origin main && git checkout -b feat/작업명`
+2. **사전 검증**: `npm run lint && npm run build` (58개 정적 페이지 빌드 필수 확인)
+3. **커밋 및 푸시**: `git push -u origin feat/작업명`
+4. **Pull Request(PR) 생성**: `gh pr create` 또는 GitHub 웹에서 PR 생성
+5. **PR 승인 및 머지**: 승인 후 `main`에 Squash/Merge 진행
+6. **로컬 동기화 및 정리**:
+   ```bash
+   git checkout main && git pull origin main
+   git branch -d feat/작업명
+   ```
+
 ## Deployment
 
-`main` 브랜치 push 시 `.github/workflows/deploy.yml`이 SSH로 배포 서버의 forced command를 호출합니다. 실제 배포 스크립트는 서버의 `/usr/local/bin/deploy-montessoris` 쪽에서 관리됩니다.
+`main` 브랜치 push/merge 시 `.github/workflows/deploy.yml`이 SSH로 배포 서버의 forced command를 호출합니다. 실제 배포 스크립트는 서버의 `/usr/local/bin/deploy-montessoris` 쪽에서 관리됩니다.
 
 ## Notes
 
