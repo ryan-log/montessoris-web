@@ -15,6 +15,11 @@ import { getDefinition } from "@/lib/definitions"
 import DefinitionLead from "@/components/DefinitionLead"
 import DefinitionFaq from "@/components/DefinitionFaq"
 import { createPageMetadata } from "@/lib/metadata"
+import remarkGfm from "remark-gfm"
+import TableOfContents from "@/components/TableOfContents"
+import AuthorBio from "@/components/AuthorBio"
+import { mdxComponents } from "@/components/MdxComponents"
+import { extractHeadings } from "@/lib/toc"
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -56,6 +61,7 @@ export default async function BlogPost({ params }: Props) {
   ])
   // 정의형/개념형 글에만 정의 리드·FAQ·구조화 데이터를 얹는다 (에세이형 글은 그대로).
   const def = getDefinition(slug)
+  const headings = extractHeadings(postData.content || "")
 
   return (
     <>
@@ -96,6 +102,9 @@ export default async function BlogPost({ params }: Props) {
           {/* 정의 front-load — 본문 최상단에 정의형 쿼리 직접 답. 에세이형 글엔 렌더 안 됨(null). */}
           <DefinitionLead slug={slug} className="mb-10" />
 
+          {/* 자동 생성 목차 (TOC) — H2/H3가 2개 이상일 때 자동 노출 */}
+          <TableOfContents items={headings} />
+
           {postData.image && (
             <figure className="mb-12 overflow-hidden rounded-lg border border-ink/10 bg-linen">
               <div className="relative aspect-[16/9] w-full">
@@ -112,14 +121,24 @@ export default async function BlogPost({ params }: Props) {
           )}
 
           <div className="prose prose-neutral prose-lg max-w-none prose-headings:font-display prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-ink prose-p:text-ink/80 prose-li:text-ink/80 prose-strong:text-ink prose-a:text-sage-deep prose-a:no-underline hover:prose-a:underline prose-blockquote:border-sage prose-blockquote:text-ink/70 prose-img:rounded-lg">
-            {/* @ts-expect-error Server Component */}
-            <MDXRemote source={postData.content} />
+            <MDXRemote
+              source={postData.content || ""}
+              components={mdxComponents}
+              options={{
+                mdxOptions: {
+                  remarkPlugins: [remarkGfm],
+                },
+              }}
+            />
           </div>
 
           {/* FAQ — 정의형 글에만 표시 */}
           <div className="mt-16">
             <DefinitionFaq slug={slug} />
           </div>
+
+          {/* E-E-A-T 저자 및 전문가 감수 프로필 */}
+          <AuthorBio />
 
           {/* 관련 게시글 */}
           <section className="mt-16 border-t border-ink/10 pt-12">
