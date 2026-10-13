@@ -14,7 +14,17 @@ export function isExperienceScenePath(pathname: string | null) {
   return !!m && SCENE_SLUGS.has(m[1])
 }
 
+// Printable school-event sheets — the page body is the print output, and the
+// fixed header / counsel launcher would otherwise repeat on every printed page.
+export function isSchoolEventPrintPath(pathname: string | null) {
+  return pathname === "/school-event/lucky-draw" || pathname === "/school-event/lucky-draw/"
+}
+
 // Routes that render immersively, without the global header/footer chrome.
 export function isChromelessPath(pathname: string | null) {
-  return isCounselPath(pathname) || isExperienceScenePath(pathname)
+  return (
+    isCounselPath(pathname) ||
+    isExperienceScenePath(pathname) ||
+    isSchoolEventPrintPath(pathname)
+  )
 }
