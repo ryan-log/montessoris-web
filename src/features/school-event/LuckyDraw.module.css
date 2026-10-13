@@ -1,0 +1,116 @@
+/*
+ * 행운권 인쇄 시트. 치수는 luckyDraw.ts의 PRINT_LAYOUT → CSS 변수(--page-*, --ticket-*)로 받는다.
+ * 화면: 실제 크기 A4 미리보기 / 인쇄: .page 하나가 A4 한 쪽.
+ */
+
+.preview {
+  overflow-x: auto;
+  padding: 2.5rem 1rem 5rem;
+  background-color: #ede7db; /* linen */
+}
+
+.page {
+  width: var(--page-width);
+  margin: 0 auto;
+}
+
+.page + .page {
+  margin-top: 2.5rem;
+}
+
+.sheet {
+  height: var(--page-height);
+  padding: var(--page-margin);
+  display: grid;
+  grid-template-columns: repeat(var(--columns), var(--ticket-width));
+  grid-auto-rows: var(--ticket-height);
+  justify-content: center;
+  align-content: start;
+  background-color: #fff;
+  box-shadow: 0 24px 60px -36px rgba(38, 64, 47, 0.45);
+}
+
+.ticket {
+  display: flex;
+  flex-direction: column;
+  border: 0.5px dashed #aaa;
+  break-inside: avoid;
+  /* 겉면 크림색까지 미리보기 그대로 인쇄 ('배경 그래픽' 옵션과 무관) */
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.outer,
+.inner {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* 접히는 겉면 (2×2cm) */
+.outer {
+  border-bottom: 0.5px dotted #ccc;
+  background-color: #fff9f0;
+  font-size: 8px;
+  line-height: 1.2;
+}
+
+.heart {
+  width: 11px;
+  height: 11px;
+  margin-bottom: 1px;
+}
+
+/* 당첨 안쪽면 (2×2cm) */
+.inner {
+  background-color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.rank {
+  margin-bottom: 1px;
+  font-size: 10px;
+  color: #e63946;
+}
+
+.desc {
+  font-size: 7px;
+  color: #666;
+}
+
+.blank .rank {
+  color: #777;
+}
+
+@media print {
+  /* 스크롤 컨테이너는 인쇄 시 쪽으로 나뉘지 않고 잘리므로 반드시 풀어준다. */
+  .preview {
+    overflow: visible;
+    padding: 0;
+    background: none;
+  }
+
+  .page {
+    width: auto;
+    break-after: page;
+  }
+
+  .page + .page {
+    margin-top: 0;
+  }
+
+  .page:last-child {
+    break-after: auto;
+  }
+
+  /* 여백은 @page가 맡는다. */
+  .sheet {
+    height: auto;
+    padding: 0;
+    box-shadow: none;
+  }
+}
