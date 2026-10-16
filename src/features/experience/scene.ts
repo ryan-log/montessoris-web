@@ -43,6 +43,28 @@ export interface SceneCallbacks {
   onProgress: (placed: number, total: number) => void
   onFeedback: (type: "success" | "error" | "info", message: string) => void
   onComplete: () => void
+  onDemoStateChange?: (active: boolean, narration: string | null) => void
+}
+
+export interface DemoScriptCopy {
+  intro: string
+  firstPiece: string
+  secondPiece: string
+  mistakeTry: string
+  mistakeNotice: string
+  mistakeRecover: string
+  steadyFlow: string
+  finishing: string
+}
+
+type PieceAnim = {
+  from: THREE.Vector3
+  target: THREE.Vector3
+  arcHeight: number
+  duration: number
+  elapsed: number
+  wobble?: boolean
+  onDone?: () => void
 }
 
 type Piece = {
@@ -53,7 +75,7 @@ type Piece = {
   origin: THREE.Vector3
   originYaw: number
   placed: boolean
-  anim: { target: THREE.Vector3; onDone?: () => void } | null
+  anim: PieceAnim | null
   yawTarget: number
   hint: boolean
 }
@@ -88,6 +110,8 @@ export class MaterialScene {
   private orientTimer: ReturnType<typeof setTimeout> | null = null
   private baseDist = 1
   private wasPortrait = false
+  private demoActive = false
+  private demoTimers: Array<ReturnType<typeof setTimeout>> = []
 
   constructor(
     container: HTMLElement,
@@ -281,6 +305,7 @@ export class MaterialScene {
   }
 
   private onPointerDown = (e: PointerEvent) => {
+    if (this.demoActive) return // lock manual piece grab while demo plays
     if (this.dragging) return // single-pointer lock
     if (e.button !== 0) return // primary button / touch only
     this.setPointer(e)
@@ -301,6 +326,7 @@ export class MaterialScene {
   }
 
   private onPointerMove = (e: PointerEvent) => {
+    if (this.demoActive) return
     if (this.dragging) {
       if (this.activePointerId !== null && e.pointerId !== this.activePointerId) return
       this.setPointer(e)
@@ -368,30 +394,71 @@ export class MaterialScene {
     this.returnToOrigin(piece)
   }
 
-  private placePiece(piece: Piece) {
+  private placePiece(
+    piece: Piece,
+    opts?: { arcHeight?: number; duration?: number; silentFeedback?: boolean }
+  ) {
     const targetPos = new THREE.Vector3(...this.cfg.targetTransform(this.placed).pos)
     this.placed += 1
     piece.placed = true
     piece.hint = false
     piece.yawTarget = 0
     this.setEmissive(piece, 0x000000)
-    this.animateTo(piece, targetPos, () => {
-      if (this.placed === this.cfg.count && !this.completedFired) {
-        this.completedFired = true
-        this.cb.onComplete()
+    this.animateTo(
+      piece,
+      targetPos,
+      () => {
+        if (this.placed === this.cfg.count && !this.completedFired) {
+          this.completedFired = true
+          if (this.demoActive) {
+            this.clearDemoTimers()
+            this.demoActive = false
+            this.controls.autoRotate = false
+            this.cb.onDemoStateChange?.(false, null)
+          }
+          this.cb.onComplete()
+        }
+      },
+      {
+        arcHeight: opts?.arcHeight ?? 0.35,
+        duration: opts?.duration ?? 0.55,
       }
-    })
+    )
     this.cb.onProgress(this.placed, this.cfg.count)
-    this.cb.onFeedback("success", this.copy.successChip)
+    if (!opts?.silentFeedback) {
+      this.cb.onFeedback("success", this.copy.successChip)
+    }
   }
 
-  private animateTo(piece: Piece, target: THREE.Vector3, onDone?: () => void) {
-    piece.anim = { target: target.clone(), onDone }
+  private animateTo(
+    piece: Piece,
+    target: THREE.Vector3,
+    onDone?: () => void,
+    opts?: { arcHeight?: number; duration?: number; wobble?: boolean }
+  ) {
+    if (this.reduced) {
+      piece.object.position.copy(target)
+      piece.anim = null
+      onDone?.()
+      return
+    }
+    piece.anim = {
+      from: piece.object.position.clone(),
+      target: target.clone(),
+      arcHeight: opts?.arcHeight ?? 0.25,
+      duration: opts?.duration ?? 0.48,
+      elapsed: 0,
+      wobble: opts?.wobble,
+      onDone,
+    }
   }
 
-  private returnToOrigin(piece: Piece) {
+  private returnToOrigin(piece: Piece, opts?: { arcHeight?: number; duration?: number }) {
     piece.yawTarget = piece.originYaw
-    this.animateTo(piece, piece.origin)
+    this.animateTo(piece, piece.origin, undefined, {
+      arcHeight: opts?.arcHeight ?? 0.35,
+      duration: opts?.duration ?? 0.55,
+    })
   }
 
   private onResize = () => {
@@ -430,15 +497,145 @@ export class MaterialScene {
 
   // ---- public controls ----
 
+  private clearDemoTimers() {
+    this.demoTimers.forEach((t) => clearTimeout(t))
+    this.demoTimers = []
+  }
+
+  stopDemo(resetScene = false) {
+    this.clearDemoTimers()
+    if (this.demoActive) {
+      this.demoActive = false
+      this.controls.autoRotate = false
+      this.pieces.forEach((p) => {
+        if (!p.placed) {
+          this.setEmissive(p, 0x000000)
+          p.object.rotation.z = 0
+        }
+      })
+      this.cb.onDemoStateChange?.(false, null)
+    }
+    if (resetScene) {
+      this.reset()
+    }
+  }
+
+  /**
+   * Child Presentation & Control-of-Error Demo Animator.
+   * Choreographs a gentle, realistic sequence showing:
+   * 1) Careful presentation of the largest pieces (10, 9) along a lifted parabolic arc
+   * 2) An authentic child's exploratory mistake at step 3 (picking piece 6 instead of 8)
+   * 3) Self-discovery (Control of Error) — pausing, noticing the proportion gap, and returning piece 6
+   * 4) Focused flow ("Normalization") completing pieces 8 down to 1.
+   */
+  startDemo(demoCopy: DemoScriptCopy) {
+    this.stopDemo(false)
+    this.reset()
+    this.resetView()
+    this.demoActive = true
+    if (!this.reduced) {
+      this.controls.autoRotate = true
+      this.controls.autoRotateSpeed = 0.45
+    }
+
+    const schedule = (ms: number, fn: () => void) => {
+      const t = setTimeout(() => {
+        if (!this.demoActive || this.disposed) return
+        fn()
+      }, ms)
+      this.demoTimers.push(t)
+    }
+
+    this.cb.onDemoStateChange?.(true, demoCopy.intro)
+
+    // Step 1: Piece 10 (k = 0)
+    schedule(900, () => {
+      const p10 = this.pieces.find((p) => p.n === 10)
+      if (!p10) return
+      this.cb.onDemoStateChange?.(true, demoCopy.firstPiece)
+      this.setEmissive(p10, this.cfg.grabEmissive)
+      this.placePiece(p10, { arcHeight: 0.9, duration: 1.05, silentFeedback: true })
+    })
+
+    // Step 2: Piece 9 (k = 1)
+    schedule(2600, () => {
+      const p9 = this.pieces.find((p) => p.n === 9)
+      if (!p9) return
+      this.cb.onDemoStateChange?.(true, demoCopy.secondPiece)
+      this.setEmissive(p9, this.cfg.grabEmissive)
+      this.placePiece(p9, { arcHeight: 0.9, duration: 1.0, silentFeedback: true })
+    })
+
+    // Step 3a: Exploratory Mistake — try Piece 6 at slot k = 2 (where Piece 8 belongs)
+    schedule(4300, () => {
+      const p6 = this.pieces.find((p) => p.n === 6)
+      if (!p6) return
+      this.cb.onDemoStateChange?.(true, demoCopy.mistakeTry)
+      this.setEmissive(p6, this.cfg.grabEmissive)
+      p6.yawTarget = 0
+      const slotPos = new THREE.Vector3(...this.cfg.targetTransform(2).pos)
+      this.animateTo(
+        p6,
+        slotPos,
+        () => {
+          // Subtle amber tint while child observes the mismatch
+          this.setEmissive(p6, 0x4a2c14)
+        },
+        { arcHeight: 0.95, duration: 1.0, wobble: true }
+      )
+    })
+
+    // Step 3b: Control of Error — child notices the visual/tactile disharmony
+    schedule(5500, () => {
+      this.cb.onDemoStateChange?.(true, demoCopy.mistakeNotice)
+      this.cb.onFeedback("info", "스스로 크기를 비교하며 오류를 발견해요")
+    })
+
+    // Step 3c: Self-correction — gently return Piece 6 to the rug and pick Piece 8
+    schedule(7100, () => {
+      const p6 = this.pieces.find((p) => p.n === 6)
+      if (p6) {
+        p6.object.rotation.z = 0
+        this.setEmissive(p6, 0x000000)
+        this.returnToOrigin(p6, { arcHeight: 0.75, duration: 0.9 })
+      }
+      this.cb.onDemoStateChange?.(true, demoCopy.mistakeRecover)
+    })
+
+    schedule(8100, () => {
+      const p8 = this.pieces.find((p) => p.n === 8)
+      if (!p8) return
+      this.placePiece(p8, { arcHeight: 0.9, duration: 0.95, silentFeedback: true })
+      this.cb.onFeedback("success", "스스로 알맞은 조각을 찾았어요")
+    })
+
+    // Step 4: Steady flow for pieces 7 down to 1
+    const remaining = [7, 6, 5, 4, 3, 2, 1]
+    remaining.forEach((n, idx) => {
+      schedule(9400 + idx * 1150, () => {
+        const piece = this.pieces.find((p) => p.n === n && !p.placed)
+        if (!piece) return
+        if (n === 7) {
+          this.cb.onDemoStateChange?.(true, demoCopy.steadyFlow)
+        } else if (n === 2) {
+          this.cb.onDemoStateChange?.(true, demoCopy.finishing)
+        }
+        this.placePiece(piece, { arcHeight: 0.85, duration: 0.82, silentFeedback: true })
+      })
+    })
+  }
+
   reset() {
+    this.stopDemo(false)
     if (this.dragging) this.endDrag()
     this.completedFired = false
     this.pieces.forEach((p) => {
       p.placed = false
       p.hint = false
       p.yawTarget = p.originYaw
+      p.object.rotation.z = 0
       this.setEmissive(p, 0x000000)
-      this.animateTo(p, p.origin)
+      this.animateTo(p, p.origin, undefined, { arcHeight: 0.25, duration: 0.45 })
     })
     this.placed = 0
     this.cb.onProgress(0, this.cfg.count)
@@ -450,6 +647,7 @@ export class MaterialScene {
   }
 
   hint() {
+    if (this.demoActive) return
     // clear any prior hint so only one piece ever pulses
     this.pieces.forEach((p) => {
       if (p.hint) {
@@ -474,9 +672,10 @@ export class MaterialScene {
 
   /** Non-pointer path: place the next correct piece (keyboard / assistive use). */
   placeNext() {
+    if (this.demoActive) this.stopDemo(false)
     if (this.placed >= this.cfg.count) return
     const correctN = this.cfg.count - this.placed
-    const piece = this.pieces.find((p) => p.n === correctN && !p.placed)
+    const piece = this.pieces.find((p) => p.n === nextNPiece(this.pieces, correctN) && !p.placed)
     if (!piece || piece.anim) return
     if (this.dragging) {
       const dragged = this.dragging
@@ -486,20 +685,34 @@ export class MaterialScene {
         this.returnToOrigin(dragged)
       }
     }
-    this.placePiece(piece)
+    this.placePiece(piece, { arcHeight: 0.65, duration: 0.6 })
   }
 
   private animate = () => {
     this.raf = requestAnimationFrame(this.animate)
     const dt = Math.min(this.clock.getDelta(), 0.1)
-    const posF = this.reduced ? 1 : 1 - Math.pow(1 - 0.2, dt * 60)
     const yawF = this.reduced ? 1 : 1 - Math.pow(1 - 0.25, dt * 60)
 
     for (const p of this.pieces) {
       if (p.anim) {
-        p.object.position.lerp(p.anim.target, posF)
-        if (p.object.position.distanceTo(p.anim.target) < 0.004) {
+        p.anim.elapsed += dt
+        const rawT = Math.min(p.anim.elapsed / Math.max(p.anim.duration, 0.05), 1)
+        // Smooth cubic ease-in-out
+        const ease =
+          rawT < 0.5 ? 4 * rawT * rawT * rawT : 1 - Math.pow(-2 * rawT + 2, 3) / 2
+
+        p.object.position.lerpVectors(p.anim.from, p.anim.target, ease)
+        // Parabolic lift simulating a child carefully lifting & placing with two hands
+        const lift = Math.sin(rawT * Math.PI) * p.anim.arcHeight
+        p.object.position.y += lift
+
+        if (p.anim.wobble && rawT > 0.7) {
+          p.object.rotation.z = Math.sin(rawT * Math.PI * 6) * 0.035 * (1 - rawT)
+        }
+
+        if (rawT >= 1) {
           p.object.position.copy(p.anim.target)
+          p.object.rotation.z = 0
           const done = p.anim.onDone
           p.anim = null
           done?.()
@@ -533,6 +746,7 @@ export class MaterialScene {
 
   dispose() {
     this.disposed = true
+    this.clearDemoTimers()
     cancelAnimationFrame(this.raf)
     if (this.orientTimer) {
       clearTimeout(this.orientTimer)
@@ -560,4 +774,8 @@ export class MaterialScene {
     this.renderer.forceContextLoss()
     if (cv.parentNode === this.container) this.container.removeChild(cv)
   }
+}
+
+function nextNPiece(pieces: Piece[], correctN: number): number {
+  return pieces.some((p) => p.n === correctN) ? correctN : -1
 }
