@@ -156,8 +156,8 @@ export function CounselPanel({
   const followUps = !isBusy && lastAssistant?.followUps ? lastAssistant.followUps : []
 
   const containerClasses = isPage
-    ? 'w-full h-[100dvh] sm:h-[650px] sm:max-h-[85vh] sm:w-[500px] sm:rounded-3xl sm:border sm:border-stone-200 sm:shadow-2xl flex flex-col bg-stone-50 overflow-hidden'
-    : `${styles.sheetUp} overscroll-contain fixed inset-0 z-[90] flex flex-col bg-stone-50 sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[600px] sm:max-h-[85vh] sm:w-[380px] sm:overflow-hidden sm:rounded-3xl sm:border sm:border-stone-200 sm:shadow-2xl`
+    ? 'w-full h-[100dvh] sm:h-[650px] sm:max-h-[85vh] sm:w-[500px] sm:rounded-3xl sm:border sm:border-ink/10 sm:shadow-2xl flex flex-col bg-paper overflow-hidden'
+    : `${styles.sheetUp} overscroll-contain fixed inset-0 z-[90] flex flex-col bg-paper sm:inset-auto sm:bottom-5 sm:right-5 sm:h-[600px] sm:max-h-[85vh] sm:w-[380px] sm:overflow-hidden sm:rounded-3xl sm:border sm:border-ink/10 sm:shadow-2xl`
 
   return (
     <div
@@ -167,13 +167,13 @@ export function CounselPanel({
       className={containerClasses}
     >
       {/* 헤더 */}
-      <header className="flex items-center gap-3 border-b border-stone-200 bg-white/90 px-4 py-3 backdrop-blur-sm">
+      <header className="flex items-center gap-3 border-b border-ink/[0.08] bg-linen/60 px-4 py-3 backdrop-blur-sm">
         {isPage && (
           <button
             type="button"
             onClick={handleClose}
             aria-label="뒤로 가기"
-            className="mr-1 flex h-8 w-8 items-center justify-center rounded-full text-stone-500 transition-colors hover:bg-stone-100"
+            className="mr-1 flex h-8 w-8 items-center justify-center rounded-full text-ink/60 transition-colors hover:bg-ink/5"
           >
             <BackIcon />
           </button>
@@ -181,13 +181,13 @@ export function CounselPanel({
         <CounselorAvatar />
         <div className="min-w-0 flex-1">
           {isPage ? (
-            <h1 className="truncate text-sm font-bold text-stone-800">
+            <h1 className="truncate text-sm font-bold text-ink">
               24시간 무료 AI 몬테소리 육아 상담
             </h1>
           ) : (
-            <p className="truncate text-sm font-bold text-stone-800">마리 · 몬테소리 상담</p>
+            <p className="truncate text-sm font-bold text-ink">마리 · 몬테소리 상담</p>
           )}
-          <p className="truncate text-[11px] text-stone-500">
+          <p className="truncate text-[11px] text-ink/60">
             {status === 'thinking'
               ? '마리 선생님이 마음을 살피는 중…'
               : status === 'restoring'
@@ -198,7 +198,7 @@ export function CounselPanel({
         <button
           type="button"
           onClick={reset}
-          className="rounded-full px-2.5 py-1 text-[11px] font-medium text-stone-500 transition-colors hover:bg-stone-100"
+          className="rounded-full px-2.5 py-1 text-[11px] font-medium text-ink/60 transition-colors hover:bg-ink/5"
           aria-label="새 대화 시작"
         >
           새 대화
@@ -208,7 +208,7 @@ export function CounselPanel({
             type="button"
             onClick={handleClose}
             aria-label="상담 닫기"
-            className="flex h-8 w-8 items-center justify-center rounded-full text-stone-500 transition-colors hover:bg-stone-100"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-ink/60 transition-colors hover:bg-ink/5"
           >
             <CloseIcon />
           </button>
@@ -233,7 +233,7 @@ export function CounselPanel({
               key={i}
               type="button"
               onClick={() => submit(f)}
-              className={`${styles.popIn} rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs text-stone-700 transition-colors hover:border-[#5f8d76] hover:text-[#4e7a66]`}
+              className={`${styles.popIn} rounded-full border border-ink/10 bg-white px-3 py-1.5 text-xs text-ink/80 transition-colors hover:border-sage hover:text-sage-deep`}
             >
               {f}
             </button>
@@ -243,7 +243,7 @@ export function CounselPanel({
 
       {/* 입력 */}
       <div
-        className="border-t border-stone-200 bg-white/90 px-3 pt-2.5 backdrop-blur-sm"
+        className="border-t border-ink/[0.08] bg-white/95 px-3 pt-2.5 backdrop-blur-sm"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0.625rem)' }}
       >
         <div className="flex items-end gap-2">
@@ -256,7 +256,7 @@ export function CounselPanel({
             disabled={status === 'restoring'}
             placeholder={status === 'restoring' ? '이전 대화를 불러오는 중…' : '여기에 마음을 적어보세요…'}
             aria-label="상담 메시지 입력"
-            className="max-h-[120px] min-h-[40px] flex-1 resize-none rounded-2xl border border-stone-300 bg-white px-3 py-2 text-sm leading-relaxed text-stone-800 outline-none placeholder:text-stone-400 focus:border-[#5f8d76] overflow-hidden"
+            className="max-h-[120px] min-h-[40px] flex-1 resize-none rounded-2xl border border-ink/15 bg-white px-3 py-2 text-sm leading-relaxed text-ink outline-none placeholder:text-ink/40 focus:border-sage overflow-hidden"
           />
           <button
             type="button"
@@ -265,14 +265,13 @@ export function CounselPanel({
             aria-label="보내기"
             className={
               'flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white transition ' +
-              (isBusy || !value.trim() ? 'cursor-not-allowed bg-stone-300' : 'hover:brightness-105 active:scale-95')
+              (isBusy || !value.trim() ? 'cursor-not-allowed bg-ink/20' : 'bg-sage hover:bg-sage-deep active:scale-95')
             }
-            style={isBusy || !value.trim() ? undefined : { backgroundColor: SAGE }}
           >
             <SendIcon />
           </button>
         </div>
-        <p className="mt-1 px-1 text-center text-[9px] leading-normal text-stone-400">
+        <p className="mt-1 px-1 text-center text-[9px] leading-normal text-ink/45">
           Enter 전송 · Shift+Enter 줄바꿈
           <br />
           🔒 학부모님과 아이의 소중한 대화를 안전하게 지키기 위해, 대화 내용이 외부로 유출되지 않고 스스로 답변을 준비하는 안심 AI예요. 대화가 몰려 답변이 조금 늦어지더라도 너른 마음으로 양해해 주시면 감사하겠습니다. 😊
@@ -298,12 +297,11 @@ function Bubble({
         className={
           `${styles.popIn} max-w-[82%] whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm leading-relaxed [overflow-wrap:anywhere] ` +
           (isUser
-            ? 'rounded-br-md text-white'
+            ? 'rounded-br-md bg-sage text-white'
             : isError
               ? 'rounded-bl-md bg-red-50 text-red-700 ring-1 ring-red-100'
-              : 'rounded-bl-md bg-white text-stone-700 ring-1 ring-stone-200')
+              : 'rounded-bl-md bg-white text-ink/85 ring-1 ring-ink/10')
         }
-        style={isUser ? { backgroundColor: SAGE } : undefined}
       >
         {children}
       </div>
@@ -314,12 +312,12 @@ function Bubble({
 function TypingBubble() {
   return (
     <div className="flex justify-start">
-      <div className="flex items-center gap-1 rounded-2xl rounded-bl-md bg-white px-4 py-3 ring-1 ring-stone-200">
+      <div className="flex items-center gap-1 rounded-2xl rounded-bl-md bg-white px-4 py-3 ring-1 ring-ink/10">
         {[0, 1, 2].map((i) => (
           <span
             key={i}
-            className={`${styles.dot} h-1.5 w-1.5 rounded-full`}
-            style={{ animationDelay: `${i * 0.15}s`, backgroundColor: SAGE }}
+            className={`${styles.dot} h-1.5 w-1.5 rounded-full bg-sage`}
+            style={{ animationDelay: `${i * 0.15}s` }}
           />
         ))}
       </div>

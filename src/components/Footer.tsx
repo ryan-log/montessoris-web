@@ -25,15 +25,21 @@ export default function Footer() {
               {dict.hero.subtitle.split('\n')[0]}
             </p>
           </div>
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-8">
             <div className="space-y-3 text-sm">
-              <h4 className="text-paper font-mono text-xs uppercase tracking-[0.18em] mb-4">바로가기</h4>
+              <h4 className="text-paper font-mono text-xs uppercase tracking-[0.14em] mb-4">몬테소리 안내</h4>
               <Link href="/montessori" className="block hover:text-paper transition-colors">{dict.header.about}</Link>
               <Link href="/benefits" className="block hover:text-paper transition-colors">{dict.header.benefits}</Link>
               <Link href="/programs" className="block hover:text-paper transition-colors">{dict.header.programs}</Link>
             </div>
             <div className="space-y-3 text-sm">
-              <h4 className="text-paper font-mono text-xs uppercase tracking-[0.18em] mb-4">약관</h4>
+              <h4 className="text-paper font-mono text-xs uppercase tracking-[0.14em] mb-4">체험 및 가이드</h4>
+              <Link href="/experience" className="block hover:text-paper transition-colors">교구 가이드 (3D 체험)</Link>
+              <Link href="/blog" className="block hover:text-paper transition-colors">몬테소리 육아 블로그</Link>
+              <Link href="/counsel" className="block hover:text-paper transition-colors">24시간 무료 AI 상담</Link>
+            </div>
+            <div className="space-y-3 text-sm">
+              <h4 className="text-paper font-mono text-xs uppercase tracking-[0.14em] mb-4">약관</h4>
               <Link href="/privacy" className="block hover:text-paper transition-colors">{dict.footer.privacy}</Link>
               <Link href="/terms" className="block hover:text-paper transition-colors">{dict.footer.terms}</Link>
             </div>

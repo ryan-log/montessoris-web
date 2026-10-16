@@ -14,6 +14,17 @@ export type MaterialCopy = {
   completeBody: string
 }
 
+export type DemoCopy = {
+  intro: string
+  firstPiece: string
+  secondPiece: string
+  mistakeTry: string
+  mistakeNotice: string
+  mistakeRecover: string
+  steadyFlow: string
+  finishing: string
+}
+
 export type MaterialFaq = {
   question: string
   answer: string
@@ -41,6 +52,7 @@ export type MaterialMeta = {
   metaDescription: string
   guide: MaterialGuide
   copy: MaterialCopy
+  demoCopy: DemoCopy
 }
 
 // Order = didactic sensorial → math (single source of truth for shelf + routing).
@@ -102,6 +114,16 @@ export const MATERIALS: MaterialMeta[] = [
       completeBody:
         "열 개의 정육면체를 가장 큰 것부터 차곡차곡 쌓아 올렸어요. 손끝으로 크기의 차이를 느끼며 스스로 찾아낸 순서예요. 그 고요한 집중의 순간이 아이를 자라게 합니다.",
     },
+    demoCopy: {
+      intro: "아이가 양탄자 둘레에 놓인 열 개의 분홍 정육면체를 천천히 둘러봅니다.",
+      firstPiece: "가장 크고 묵직한 10번 정육면체를 두 손으로 들어 양탄자 한가운데에 놓습니다.",
+      secondPiece: "남은 조각들을 눈으로 비교한 뒤, 그다음으로 큰 9번 정육면체를 살며시 올립니다.",
+      mistakeTry: "이번엔 조금 작은 6번 조각을 집어 위에 올려보네요. 어떻게 될까요?",
+      mistakeNotice: "어? 턱이 너무 넓게 남는 걸 아이 스스로 눈으로 발견했어요 (오류의 정정).",
+      mistakeRecover: "엄마가 말해주지 않아도 스스로 6번을 내려놓고, 알맞은 8번 조각을 찾아 올립니다.",
+      steadyFlow: "이제 손끝의 감각과 눈의 질서가 맞물려, 일정한 리듬으로 몰입하며 쌓아 올립니다.",
+      finishing: "가장 작은 1cm 정육면체까지 꼭대기에 조심스레 올리며 스스로 해낸 기쁨을 만납니다.",
+    },
   },
   {
     slug: "brown-stair",
@@ -159,6 +181,16 @@ export const MATERIALS: MaterialMeta[] = [
       completeTitle: "계단을 완성했어요",
       completeBody:
         "열 개의 기둥을 두께 순서대로 나란히 놓아 넓은 계단을 완성했어요. 두께의 작은 차이를 눈과 손끝으로 하나하나 가늠하며 스스로 만들어낸 그 집중의 시간이 아이를 자라게 합니다.",
+    },
+    demoCopy: {
+      intro: "길이는 모두 같지만 두께가 서로 다른 열 개의 갈색 사각기둥을 살펴봅니다.",
+      firstPiece: "가장 두껍고 묵직한 첫 번째 기둥을 양손으로 감싸 쥐어 왼쪽 끝에 반듯하게 놓습니다.",
+      secondPiece: "손아귀에 잡히는 부피감을 느끼며, 바로 다음 두께의 기둥을 빈틈없이 이어 붙입니다.",
+      mistakeTry: "조금 얇은 6번 기둥을 가져와 옆에 대어 보네요.",
+      mistakeNotice: "계단 높이가 갑자기 푹 꺼지는 단차를 보고 아이가 잠시 손을 멈춥니다 (오류의 정정).",
+      mistakeRecover: "스스로 기둥을 제자리에 돌려놓고, 매끄러운 계단 흐름을 만드는 8번 기둥을 찾아 놓습니다.",
+      steadyFlow: "한 계단씩 일정하게 낮아지는 시각적 리듬을 따라 차분하게 기둥을 배열합니다.",
+      finishing: "가장 얇은 마지막 기둥까지 가지런히 맞추며 고요하고 단단한 계단을 완성합니다.",
     },
   },
   {
@@ -219,6 +251,16 @@ export const MATERIALS: MaterialMeta[] = [
       completeTitle: "계단이 완성됐어요",
       completeBody:
         "한 칸씩 짧아지는 열 개의 막대로 곧은 계단을 만들었어요. 왼쪽 끝을 맞추고 칸을 하나씩 세는 동안, 아이는 '수'가 곧 길이이고 양이라는 것을 손으로 느낍니다. 스스로 순서를 찾아낸 그 고요한 집중이 아이를 자라게 합니다.",
+    },
+    demoCopy: {
+      intro: "빨강과 파랑 마디로 나뉜 열 개의 숫자막대를 바라보며 길이의 차이를 가늠합니다.",
+      firstPiece: "가장 긴 10막대의 양 끝을 두 손으로 잡고, 왼쪽 빨간 끝을 기준선에 맞춰 내려놓습니다.",
+      secondPiece: "딱 한 마디 짧은 9막대를 찾아 왼쪽 끝을 나란히 맞추어 바로 위에 배열합니다.",
+      mistakeTry: "이번엔 6막대를 먼저 가져와 9막대 위에 대어 보네요.",
+      mistakeNotice: "오른쪽 계단 끝이 한 칸이 아니라 세 칸이나 비는 걸 눈으로 확인합니다 (오류의 정정).",
+      mistakeRecover: "스스로 6막대를 내려놓고, 빨강·파랑 마디를 세어 8막대를 정확히 찾아옵니다.",
+      steadyFlow: "하나씩 줄어드는 마디의 질서를 느끼며 막대를 차곡차곡 정렬해 나갑니다.",
+      finishing: "마지막 빨간 1막대까지 꼭대기에 맞추며 1부터 10까지의 수량을 눈과 손으로 완성합니다.",
     },
   },
 ]

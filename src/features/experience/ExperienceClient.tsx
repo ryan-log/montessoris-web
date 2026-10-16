@@ -24,6 +24,8 @@ export default function ExperienceClient({ material }: { material: MaterialSlug 
   const [feedback, setFeedback] = useState<Feedback | null>(null)
   const [completed, setCompleted] = useState(false)
   const [failed, setFailed] = useState(false)
+  const [demoActive, setDemoActive] = useState(false)
+  const [demoNarration, setDemoNarration] = useState<string | null>(null)
 
   const total = meta?.pieceCount ?? 10
 
@@ -36,6 +38,8 @@ export default function ExperienceClient({ material }: { material: MaterialSlug 
     setCompleted(false)
     setFeedback(null)
     setFailed(false)
+    setDemoActive(false)
+    setDemoNarration(null)
     interactedRef.current = false
 
     import("./sceneLoader")
@@ -53,6 +57,10 @@ export default function ExperienceClient({ material }: { material: MaterialSlug 
           onComplete: () => {
             setCompleted(true)
             trackExperienceComplete(meta.slug, meta.pieceCount ?? 10)
+          },
+          onDemoStateChange: (active, narration) => {
+            setDemoActive(active)
+            setDemoNarration(narration)
           },
         })
         trackExperienceStart(meta.slug, meta.name)
@@ -129,12 +137,37 @@ export default function ExperienceClient({ material }: { material: MaterialSlug 
     sceneRef.current?.reset()
     setCompleted(false)
     setFeedback(null)
+    setDemoActive(false)
+    setDemoNarration(null)
   }
 
-  const instruction = placed === 0 ? meta.copy.start : meta.copy.progressPraise
+  const toggleDemo = () => {
+    if (demoActive) {
+      sceneRef.current?.stopDemo(false)
+    } else {
+      setCompleted(false)
+      setFeedback(null)
+      sceneRef.current?.startDemo(meta.demoCopy)
+    }
+  }
+
+  const instruction =
+    demoActive && demoNarration
+      ? demoNarration
+      : placed === 0
+        ? meta.copy.start
+        : meta.copy.progressPraise
   const step = Math.min(placed + 1, total)
-  const announce = completed ? meta.copy.completeTitle : feedback?.msg
-  const announceKey = completed ? "complete" : (feedback?.key ?? 0)
+  const announce = completed
+    ? meta.copy.completeTitle
+    : demoActive && demoNarration
+      ? demoNarration
+      : feedback?.msg
+  const announceKey = completed
+    ? "complete"
+    : demoActive && demoNarration
+      ? `demo-${demoNarration}`
+      : (feedback?.key ?? 0)
 
   return (
     <div className="fixed inset-0 touch-none select-none overscroll-none bg-linen text-ink">
@@ -168,7 +201,40 @@ export default function ExperienceClient({ material }: { material: MaterialSlug 
               </div>
             </div>
 
-            <div className="pointer-events-auto flex shrink-0 gap-2">
+            <div className="pointer-events-auto flex shrink-0 items-center gap-2">
+              <button
+                type="button"
+                onClick={toggleDemo}
+                aria-pressed={demoActive}
+                className={`inline-flex h-11 items-center gap-2 rounded-xl border px-3.5 text-xs font-semibold shadow-[0_20px_50px_-30px_rgba(38,64,47,0.5)] backdrop-blur-md transition-colors ${
+                  demoActive
+                    ? "border-sage bg-sage text-white hover:bg-sage-deep"
+                    : "border-ink/10 bg-paper/85 text-sage-deep hover:border-sage/50 hover:text-pine"
+                }`}
+              >
+                {demoActive ? (
+                  <>
+                    <span className="relative flex h-2 w-2" aria-hidden>
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-white" />
+                    </span>
+                    <span>시연 멈추기</span>
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      aria-hidden
+                    >
+                      <path d="M8 5.14v14l11-7-11-7Z" />
+                    </svg>
+                    <span>아이 탐색 시연 보기</span>
+                  </>
+                )}
+              </button>
               <HudButton label="다음 조각 놓기" onClick={() => sceneRef.current?.placeNext()}>
                 <path d="M12 4v9" />
                 <path d="M8 10l4 4 4-4" />
@@ -212,23 +278,39 @@ export default function ExperienceClient({ material }: { material: MaterialSlug 
 
           {/* guidance — 마리 선생님 */}
           <div className="pointer-events-none absolute bottom-3 left-3 max-h-[45vh] w-[min(392px,calc(100vw-1.5rem))] overflow-auto rounded-2xl border border-ink/10 bg-paper/80 p-4 shadow-[0_20px_50px_-30px_rgba(38,64,47,0.5)] backdrop-blur-md sm:bottom-4 sm:left-4 sm:p-5">
-            <div className="flex items-center gap-3">
-              <span
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
-                style={{ background: "linear-gradient(135deg,#7fae97,#33503f)" }}
-              >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <circle cx="12" cy="9.5" r="4.5" fill="#fff" opacity="0.95" />
-                  <path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6" fill="#fff" opacity="0.95" />
-                </svg>
-              </span>
-              <div>
-                <div className="text-[13px] font-bold">마리 선생님</div>
-                <div className="font-mono text-[11px] tracking-[0.1em] text-sage-deep">
-                  <span aria-hidden>STEP {step} / {total}</span>
-                  <span className="sr-only">단계 {step} / {total}</span>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
+                  style={{ background: "linear-gradient(135deg,#7fae97,#33503f)" }}
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+                    <circle cx="12" cy="9.5" r="4.5" fill="#fff" opacity="0.95" />
+                    <path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6" fill="#fff" opacity="0.95" />
+                  </svg>
+                </span>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[13px] font-bold">마리 선생님</span>
+                    {demoActive && (
+                      <span className="rounded-full bg-sage/15 px-2 py-0.5 font-mono text-[10px] font-semibold text-sage-deep">
+                        아이 탐색 시연 중
+                      </span>
+                    )}
+                  </div>
+                  <div className="font-mono text-[11px] tracking-[0.1em] text-sage-deep">
+                    <span aria-hidden>STEP {step} / {total}</span>
+                    <span className="sr-only">단계 {step} / {total}</span>
+                  </div>
                 </div>
               </div>
+              <button
+                type="button"
+                onClick={toggleDemo}
+                className="pointer-events-auto shrink-0 rounded-lg border border-sage/35 bg-white/80 px-2.5 py-1.5 text-xs font-semibold text-sage-deep transition-colors hover:bg-sage hover:text-white"
+              >
+                {demoActive ? "직접 해보기" : "▶ 시연 재생"}
+              </button>
             </div>
             <p className="mt-3.5 text-[15px] leading-relaxed" aria-live="polite">
               {instruction}

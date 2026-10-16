@@ -3,6 +3,7 @@ import { HeroSection } from "./components/HeroSection"
 import { CounselMockupSection } from "./components/CounselMockupSection"
 import { PhilosophySection } from "./components/PhilosophySection"
 import { FeaturesSection } from "./components/FeaturesSection"
+import { ExperiencePreviewSection } from "./components/ExperiencePreviewSection"
 import { BlogPreviewSection } from "./components/BlogPreviewSection"
 
 export default function HomeClient({ latestPosts }: { latestPosts: PostData[] }) {
@@ -13,6 +14,7 @@ export default function HomeClient({ latestPosts }: { latestPosts: PostData[] })
         <CounselMockupSection />
         <PhilosophySection />
         <FeaturesSection />
+        <ExperiencePreviewSection />
         <BlogPreviewSection latestPosts={latestPosts} />
       </main>
     </div>
