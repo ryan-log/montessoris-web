@@ -48,7 +48,7 @@ export function HeroSection() {
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-20 pb-16 lg:pt-28 lg:pb-20">
         <div className="max-w-3xl">
-          <p className="animate-fade font-mono text-[11px] sm:text-xs uppercase tracking-[0.25em] text-moss-light">
+          <p className="animate-fade font-mono text-[11px] sm:text-xs uppercase tracking-[0.16em] text-moss-light">
             몬테소리 · AMS 정통 교육 · 0–6세
           </p>
 
@@ -97,7 +97,7 @@ export function HeroSection() {
         <div className="mt-14 lg:mt-16">
           <RodStaircase />
           <div className="measure-rule mt-2 max-w-md text-moss-light/70" aria-hidden />
-          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.22em] text-moss-light/70">
+          <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.14em] text-moss-light/70">
             Nido · Infant Community · Casa — 한 걸음씩, 자기 속도로
           </p>
         </div>
