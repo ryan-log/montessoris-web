@@ -3,6 +3,13 @@ on:
   push:
     branches: ["main"]
 permissions: {}
+# 서버 배포 스크립트는 flock 으로 한 번에 하나만 돌고, 이미 돌고 있으면 바로 실패한다.
+# 그래서 배포를 여기서 한 번에 하나씩 돌린다. 대기 중인 실행은 가장 최근 것 하나만 남고,
+# 그 실행이 main 의 최신 커밋을 배포하므로 연달아 머지해도 마지막 머지까지 반영된다.
+# 진행 중인 배포는 끊지 않는다(cancel-in-progress: false).
+concurrency:
+  group: deploy
+  cancel-in-progress: false
 jobs:
   deploy:
     runs-on: ubuntu-latest
