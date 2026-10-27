@@ -28,6 +28,20 @@ function extractFollowUps(json: unknown): string[] {
 }
 
 /**
+ * 400 응답에서 보여 줄 문구. common-api 는 오류를 {code, message} 로 주고, message 는
+ * 사용자에게 그대로 보여 줄 수 있는 문구다(예: "메시지는 2000자 이내로 보내 주세요.").
+ */
+async function invalidRequestMessage(response: Response): Promise<string> {
+  try {
+    const json = (await response.json()) as { message?: unknown };
+    if (typeof json.message === 'string' && json.message.trim()) return json.message;
+  } catch {
+    /* 본문이 JSON 이 아니면 기본 문구 */
+  }
+  return '보낸 내용을 받을 수 없었어요. 내용을 조금 줄여서 다시 보내 주세요.';
+}
+
+/**
  * 상담 메시지 1건 전송. 네트워크 실패/비2xx 는 한국어 메시지로 throw.
  * 모델명·raw payload 는 클라이언트 경계에서 의도적으로 버린다.
  */
@@ -68,6 +82,10 @@ export async function sendChatMessage({
   }
   if (response.status === 429) {
     throw new Error('잠깐 사이를 두고 다시 보내주실래요? 너무 빠르게 보내셨어요.');
+  }
+  if (response.status === 400) {
+    // 같은 내용을 다시 보내도 또 거절되므로 "다시 시도" 대신 서버가 준 이유를 보여 준다.
+    throw new Error(await invalidRequestMessage(response));
   }
   if (!response.ok) {
     throw new Error('답변을 가져오지 못했어요. 다시 시도해 주세요.');

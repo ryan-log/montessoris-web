@@ -2,6 +2,7 @@
 
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import styles from './CounselWidget.module.css'
+import { MAX_MESSAGE_LENGTH } from './counselConfig'
 import { useChatSession } from './useChatSession'
 import { isChromelessPath } from '@/lib/routes'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
@@ -16,6 +17,10 @@ import { trackCounselOpen } from '@/lib/analytics'
  * - 추가 의존성 없이 CSS Module 애니메이션만 사용(전역 CSS 비오염).
  */
 const SAGE = '#5f8d76'
+
+// 남은 글자가 이만큼 이하가 되면 입력창 아래에 글자 수를 보여 준다.
+// 붙여 넣은 글이 maxLength 에서 잘려도 알 수 있게 하려는 것이다.
+const COUNT_HINT_FROM = MAX_MESSAGE_LENGTH - 200
 
 export default function CounselWidget() {
   const pathname = usePathname()
@@ -253,6 +258,7 @@ export function CounselPanel({
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={onKeyDown}
             rows={1}
+            maxLength={MAX_MESSAGE_LENGTH}
             disabled={status === 'restoring'}
             placeholder={status === 'restoring' ? '이전 대화를 불러오는 중…' : '여기에 마음을 적어보세요…'}
             aria-label="상담 메시지 입력"
@@ -273,6 +279,12 @@ export function CounselPanel({
         </div>
         <p className="mt-1 px-1 text-center text-[9px] leading-normal text-ink/45">
           Enter 전송 · Shift+Enter 줄바꿈
+          {value.length >= COUNT_HINT_FROM && (
+            <span className={value.length >= MAX_MESSAGE_LENGTH ? 'font-medium text-red-700' : undefined}>
+              {' · '}
+              {value.length}/{MAX_MESSAGE_LENGTH}자
+            </span>
+          )}
           <br />
           🔒 학부모님과 아이의 소중한 대화를 안전하게 지키기 위해, 대화 내용이 외부로 유출되지 않고 스스로 답변을 준비하는 안심 AI예요. 대화가 몰려 답변이 조금 늦어지더라도 너른 마음으로 양해해 주시면 감사하겠습니다. 😊
         </p>
