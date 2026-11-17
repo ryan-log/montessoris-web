@@ -72,6 +72,14 @@ API base URL 우선순위:
 - RSS: `src/app/rss.xml/route.ts`
 - Google AdSense/GTM: `src/app/layout.tsx`
 
+### Google AdSense
+
+운영 빌드는 공통 레이아웃의 `<head>`에서 게시자 `ca-pub-1586372003132738`의 애드센스 스크립트를 한 번 로드합니다. `npm run dev`에서는 광고를 요청하지 않습니다. `public/ads.txt`도 같은 게시자 ID를 선언합니다.
+
+광고 게재에는 애드센스 관리 화면에서 `montessoris.net`의 사이트 상태가 준비됨이어야 하며, **광고 → montessoris.net → 자동 광고**가 켜져 있어야 합니다. [자동 광고 설정 안내](https://support.google.com/adsense/answer/9261307?hl=ko)에 따르면 설정 적용 후 광고 표시에 최대 1시간이 걸릴 수 있습니다.
+
+4개월 이상 광고가 게재되지 않으면 비활성 경고가 표시되고, 5개월을 넘기면 재검토가 필요합니다. 재검토가 필요한 경우 배포 후 **사이트 → montessoris.net → 검토 요청**을 진행합니다. [비활성 사이트 안내](https://support.google.com/adsense/answer/12171038?hl=ko)
+
 ## Git & Branch Strategy
 
 > **중요 (Branch Protection):** 이 레포지토리는 `main` 브랜치에 직접 푸시(Direct Push)하는 것이 차단되어 있습니다.  
