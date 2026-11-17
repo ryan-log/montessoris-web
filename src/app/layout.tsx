@@ -4,7 +4,7 @@ import localFont from "next/font/local"
 import { Hahmlet, IBM_Plex_Sans_KR } from "next/font/google"
 import Header from "@/components/Header"
 import Footer from "@/components/Footer"
-// import GoogleAdsense from "@/components/GoogleAdsense"
+import GoogleAdsense from "@/components/GoogleAdsense"
 import "./globals.css"
 import CounselWidget from "@/features/counsel/CounselWidget"
 import { GoogleTagManager } from "@next/third-parties/google"
@@ -80,9 +80,9 @@ export const metadata: Metadata = {
     description: siteConfig.description,
     images: [absoluteUrl(siteConfig.ogImage)],
   },
-  // other: {
-  //   "google-adsense-account": "ca-pub-1586372003132738",
-  // },
+  other: {
+    "google-adsense-account": "ca-pub-1586372003132738",
+  },
   verification: {
     google: siteConfig.verification.google || undefined,
     other: siteConfig.verification.naver
@@ -100,18 +100,23 @@ export default function RootLayout({
 
   return (
     <html lang="ko">
+      <head>
+        {isProduction && (
+          <>
+            <link
+              rel="preconnect"
+              href="https://pagead2.googlesyndication.com"
+              crossOrigin="anonymous"
+            />
+            <GoogleAdsense pId="ca-pub-1586372003132738" />
+          </>
+        )}
+      </head>
       {isProduction && <GoogleTagManager gtmId="GTM-PZRT52KL" />}
       <body
         className={`${displaySerif.variable} ${bodySans.variable} ${geistMono.variable} antialiased bg-paper text-ink`}
       >
         <link rel="preconnect" href="https://www.googletagmanager.com" />
-        {/*
-        <link
-          rel="preconnect"
-          href="https://pagead2.googlesyndication.com"
-          crossOrigin="anonymous"
-        />
-        */}
         {/* Google Tag Manager (noscript) */}
         {isProduction && (
           <noscript>
@@ -124,7 +129,6 @@ export default function RootLayout({
           </noscript>
         )}
         {/* End Google Tag Manager (noscript) */}
-        {/* <GoogleAdsense pId="ca-pub-1586372003132738" /> */}
         <Header />
         {children}
         <Footer />
